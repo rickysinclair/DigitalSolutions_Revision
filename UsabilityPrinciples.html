@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Solutions Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center text-white">
+    <div id="app" class="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <h1 class="text-4xl font-bold mb-8 text-center text-blue-400">Usability Principles Quiz</h1>
+        <div id="timer-section" class="mb-8">
+            <div class="flex items-center justify-center space-x-4">
+                <input type="number" id="timer-input" class="bg-gray-700 border border-gray-600 rounded p-2 w-20 text-center" value="30" min="1">
+                <label for="timer-input" class="text-gray-300">minutes</label>
+                <button id="start-timer" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">Start</button>
+                <button id="stop-timer" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-300 hidden">Stop</button>
+            </div>
+            <div id="timer-display" class="text-3xl font-bold text-center mt-4 hidden text-yellow-400">00:00</div>
+        </div>
+
+        <div id="quiz-container" class="space-y-8"></div>
+
+        <button id="submit-quiz" class="mt-8 bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold">Submit Quiz</button>
+
+        <div id="results" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400">Results</h2>
+            <p id="score" class="text-xl mb-4"></p>
+            <ul id="feedback" class="list-disc pl-6 space-y-2"></ul>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Which usability principle focuses on how easy it is for users to accomplish basic tasks the first time they encounter the design?",
+                options: ["Effectiveness", "Efficiency", "Learnability", "Memorability"],
+                correctAnswer: 2
+            },
+            {
+                question: "The ability of a system to be used by many different people, even those with disabilities, is known as:",
+                options: ["Effectiveness", "Accessibility", "Utility", "Safety"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which usability principle refers to how quickly users can perform tasks once they have learned the design?",
+                options: ["Efficiency", "Learnability", "Memorability", "Satisfaction"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that ensures users can make errors and recover from them easily is:",
+                options: ["Safety", "Effectiveness", "Accessibility", "Error tolerance"],
+                correctAnswer: 3
+            },
+            {
+                question: "Which principle focuses on how pleasant the design is to use?",
+                options: ["Satisfaction", "Efficiency", "Utility", "Learnability"],
+                correctAnswer: 0
+            },
+            {
+                question: "The ability of a system to provide all the functionality that users need refers to:",
+                options: ["Effectiveness", "Efficiency", "Utility", "Accessibility"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which principle ensures that users can remember how to use the system effectively after a period of not using it?",
+                options: ["Learnability", "Memorability", "Efficiency", "Satisfaction"],
+                correctAnswer: 1
+            },
+            {
+                question: "The usability principle that focuses on how well the system enables users to achieve specified goals is:",
+                options: ["Effectiveness", "Efficiency", "Utility", "Safety"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle ensures that the system protects users from dangerous errors or unintended actions?",
+                options: ["Safety", "Error tolerance", "Accessibility", "Effectiveness"],
+                correctAnswer: 0
+            },
+            {
+                question: "The ability of users to figure out how to use the system by exploring the interface is known as:",
+                options: ["Learnability", "Discoverability", "Memorability", "Efficiency"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which usability principle is concerned with minimizing the number of steps required to complete a task?",
+                options: ["Efficiency", "Effectiveness", "Utility", "Learnability"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that ensures the system communicates its status and provides appropriate feedback to users is:",
+                options: ["Visibility", "Safety", "Utility", "Accessibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle focuses on making sure the system's features and functions match the real-world concepts and expectations of the users?",
+                options: ["Learnability", "Consistency", "Natural mapping", "Efficiency"],
+                correctAnswer: 2
+            },
+            {
+                question: "The usability principle that ensures similar things look and behave similarly, while different things look different, is:",
+                options: ["Consistency", "Natural mapping", "Visibility", "Accessibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle focuses on making important information and controls easily noticeable and accessible?",
+                options: ["Visibility", "Efficiency", "Learnability", "Safety"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that ensures the system speaks the users' language and follows real-world conventions is:",
+                options: ["Natural mapping", "Consistency", "Visibility", "Accessibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which usability principle is concerned with preventing errors before they occur?",
+                options: ["Error prevention", "Error tolerance", "Safety", "Effectiveness"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that focuses on providing clear and unambiguous instructions and information to users is:",
+                options: ["Clarity", "Visibility", "Consistency", "Learnability"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle ensures that the system provides flexibility and efficiency for both novice and expert users?",
+                options: ["Flexibility", "Efficiency", "Learnability", "Utility"],
+                correctAnswer: 0
+            },
+            {
+                question: "The usability principle that focuses on providing users with clearly marked \"emergency exits\" to leave unwanted states is:",
+                options: ["User control", "Safety", "Error tolerance", "Flexibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle ensures that the system doesn't overload the user's memory and provides easy access to instructions when needed?",
+                options: ["Recognition over recall", "Memorability", "Learnability", "Efficiency"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that focuses on providing aesthetic and minimalist design is:",
+                options: ["Simplicity", "Clarity", "Consistency", "Visibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which usability principle ensures that error messages are expressed in plain language and suggest solutions?",
+                options: ["Error tolerance", "Safety", "Clarity", "Help and documentation"],
+                correctAnswer: 2
+            },
+            {
+                question: "The principle that focuses on providing help and documentation that is easy to search and focused on the user's task is:",
+                options: ["Help and documentation", "Learnability", "Utility", "Clarity"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which principle ensures that the system supports undo and redo actions?",
+                options: ["User control", "Error tolerance", "Safety", "Flexibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "The usability principle that focuses on grouping related information and controls together is:",
+                options: ["Natural mapping", "Consistency", "Chunking", "Visibility"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which principle ensures that the system adapts to different user preferences and abilities?",
+                options: ["Flexibility", "Accessibility", "Customization", "Utility"],
+                correctAnswer: 2
+            },
+            {
+                question: "The principle that focuses on providing shortcuts for frequent actions is:",
+                options: ["Efficiency", "Flexibility", "Accelerators", "Utility"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which usability principle ensures that important actions are easily reversible?",
+                options: ["User control", "Error tolerance", "Safety", "Flexibility"],
+                correctAnswer: 0
+            },
+            {
+                question: "The principle that focuses on maintaining consistency across different parts of the system and with other similar systems is:",
+                options: ["Consistency", "Natural mapping", "Visibility", "Standardization"],
+                correctAnswer: 3
+            }
+        ];
+
+        let timer;
+        let timeLeft;
+
+        function renderQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+
+            quizData.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('mb-8', 'question-container', 'opacity-0', 'bg-gray-700', 'p-6', 'rounded-lg', 'shadow-md', 'transition', 'duration-300');
+                questionElement.innerHTML = `
+                    <h2 class="text-2xl font-semibold mb-4 text-blue-300">Question ${index + 1}</h2>
+                    <p class="text-xl mb-4">${question.question}</p>
+                    <div class="space-y-3">
+                        ${question.options.map((option, optionIndex) => `
+                            <div class="flex items-center bg-gray-600 p-3 rounded hover:bg-gray-500 transition duration-300">
+                                <input type="radio" id="q${index}o${optionIndex}" name="q${index}" value="${optionIndex}" class="mr-3 h-5 w-5">
+                                <label for="q${index}o${optionIndex}" class="text-lg cursor-pointer flex-grow">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 correct-answer hidden">
+                        <p class="text-green-400 font-semibold">Correct Answer: ${question.options[question.correctAnswer]}</p>
+                    </div>
+                `;
+                quizContainer.appendChild(questionElement);
+
+                // Animate question appearance
+                gsap.to(questionElement, {opacity: 1, duration: 0.5, delay: index * 0.2});
+            });
+        }
+
+        function startTimer() {
+            const timerInput = document.getElementById('timer-input');
+            const timerDisplay = document.getElementById('timer-display');
+            const startButton = document.getElementById('start-timer');
+            const stopButton = document.getElementById('stop-timer');
+
+            timeLeft = parseInt(timerInput.value) * 60;
+            timerDisplay.classList.remove('hidden');
+            startButton.classList.add('hidden');
+            stopButton.classList.remove('hidden');
+            timerInput.disabled = true;
+
+            updateTimerDisplay();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            const timerDisplay = document.getElementById('timer-display');
+            const startButton = document.getElementById('start-timer');
+            const stopButton = document.getElementById('stop-timer');
+            const timerInput = document.getElementById('timer-input');
+
+            timerDisplay.classList.add('hidden');
+            startButton.classList.remove('hidden');
+            stopButton.classList.add('hidden');
+            timerInput.disabled = false;
+        }
+
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('timer-display');
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function submitQuiz() {
+            clearInterval(timer);
+
+            const results = document.getElementById('results');
+            const score = document.getElementById('score');
+            const feedback = document.getElementById('feedback');
+
+            let correctAnswers = 0;
+
+            quizData.forEach((question, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const questionContainer = document.querySelectorAll('.question-container')[index];
+                const correctAnswerElement = questionContainer.querySelector('.correct-answer');
+                
+                correctAnswerElement.classList.remove('hidden');
+                
+                const options = questionContainer.querySelectorAll('.bg-gray-600');
+                
+                if (selectedAnswer) {
+                    const selectedOption = options[parseInt(selectedAnswer.value)];
+                    if (parseInt(selectedAnswer.value) === question.correctAnswer) {
+                        correctAnswers++;
+                        selectedOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                        selectedOption.classList.add('bg-green-600', 'hover:bg-green-700');
+                    } else {
+                        selectedOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                        selectedOption.classList.add('bg-red-600', 'hover:bg-red-700');
+                    }
+                }
+
+                // Highlight the correct answer if it wasn't selected
+                const correctOption = options[question.correctAnswer];
+                if (!selectedAnswer || parseInt(selectedAnswer.value) !== question.correctAnswer) {
+                    correctOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                    correctOption.classList.add('bg-green-600', 'hover:bg-green-700');
+                }
+            });
+
+            score.textContent = `You got ${correctAnswers} out of ${quizData.length} questions correct.`;
+
+            feedback.innerHTML = '';
+            quizData.forEach((question, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const listItem = document.createElement('li');
+                listItem.textContent = `Question ${index + 1}: ${selectedAnswer ? (parseInt(selectedAnswer.value) === question.correctAnswer ? 'Correct' : 'Incorrect') : 'Not answered'}`;
+                listItem.classList.add(selectedAnswer && parseInt(selectedAnswer.value) === question.correctAnswer ? 'text-green-400' : 'text-red-400');
+                feedback.appendChild(listItem);
+            });
+
+            results.classList.remove('hidden');
+            gsap.from(results, {opacity: 0, y: 20, duration: 0.5});
+
+            // Disable all inputs after submission
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.disabled = true;
+            });
+
+            // Hide the submit button
+            document.getElementById('submit-quiz').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuiz();
