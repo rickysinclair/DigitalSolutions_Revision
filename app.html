@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Solutions Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center text-white">
+    <div id="app" class="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <h1 class="text-4xl font-bold mb-8 text-center text-blue-400">Digital Solutions Quiz</h1>
+        <div id="timer-section" class="mb-8">
+            <div class="flex items-center justify-center space-x-4">
+                <input type="number" id="timer-input" class="bg-gray-700 border border-gray-600 rounded p-2 w-20 text-center" value="15" min="1">
+                <label for="timer-input" class="text-gray-300">minutes</label>
+                <button id="start-timer" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">Start</button>
+                <button id="stop-timer" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-300 hidden">Stop</button>
+            </div>
+            <div id="timer-display" class="text-3xl font-bold text-center mt-4 hidden text-yellow-400">00:00</div>
+        </div>
+
+        <div id="quiz-container" class="space-y-8"></div>
+
+        <button id="submit-quiz" class="mt-8 bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold">Submit Quiz</button>
+
+        <div id="results" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400">Results</h2>
+            <p id="score" class="text-xl mb-4"></p>
+            <ul id="feedback" class="list-disc pl-6 space-y-2"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data
+        const quizData = [
+            {
+                question: "What is the primary purpose of having a clearly expressed and up-to-date privacy policy?",
+                options: ["To comply with tax regulations", "To manage personal information in an open and transparent way", "To increase company profits", "To attract more customers"],
+                correctAnswer: 1
+            },
+            {
+                question: "When should an organization give individuals the option of not identifying themselves?",
+                options: ["Only when collecting sensitive information", "When it is lawful and practicable to do so", "Only for online transactions", "Never, as it poses security risks"],
+                correctAnswer: 1
+            },
+            {
+                question: "What standard applies to the collection of 'sensitive' information compared to other personal information?",
+                options: ["Lower standard", "The same standard", "Higher standard", "No specific standard"],
+                correctAnswer: 2
+            },
+            {
+                question: "How should an organization deal with unsolicited personal information it receives?",
+                options: ["Always use it for marketing purposes", "Immediately destroy all unsolicited information", "Determine if it could have been collected lawfully, if not, destroy or de-identify it", "Sell it to third-party advertisers"],
+                correctAnswer: 2
+            },
+            {
+                question: "When must an organization notify an individual about the collection of their personal information?",
+                options: ["Only if the individual asks", "At or before the time of collection, or as soon as practicable afterwards", "Within 30 days of collection", "Only when the information is used"],
+                correctAnswer: 1
+            },
+            {
+                question: "Under what circumstances can an organization use personal information for a purpose other than the one it was collected for?",
+                options: ["Anytime without restriction", "Only for marketing purposes", "When the individual would reasonably expect it and it's related to the primary purpose", "Never, under any circumstances"],
+                correctAnswer: 2
+            },
+            {
+                question: "What conditions must be met for an organization to use personal information for direct marketing?",
+                options: ["The information must be collected directly from the individual", "The organization must provide a simple means to opt out", "The information can only be used once", "Direct marketing is never allowed"],
+                correctAnswer: 1
+            },
+            {
+                question: "What steps must an organization take before disclosing personal information overseas?",
+                options: ["No special steps are required", "Only obtain consent from the individual", "Take reasonable steps to ensure the overseas recipient complies with the APPs", "Encrypt all data before sending"],
+                correctAnswer: 2
+            },
+            {
+                question: "When can an organization adopt a government-related identifier as its own identifier for an individual?",
+                options: ["Anytime for convenience", "Only in limited circumstances prescribed by the APPs", "Whenever the government permits it", "For all customers to streamline processes"],
+                correctAnswer: 1
+            },
+            {
+                question: "What obligation does an organization have regarding the quality of personal information it collects?",
+                options: ["No specific obligations", "Must take reasonable steps to ensure it is accurate, up-to-date and complete", "Must guarantee 100% accuracy at all times", "Only needs to check accuracy if an individual complains"],
+                correctAnswer: 1
+            },
+            {
+                question: "What does the principle of 'security of personal information' require?",
+                options: ["Use the highest level of encryption for all data", "Only store data in secure government facilities", "Take reasonable steps to protect from misuse, interference, loss, unauthorized access", "Destroy all personal information after 12 months"],
+                correctAnswer: 2
+            },
+            {
+                question: "Under what circumstances can an organization refuse an individual access to their personal information?",
+                options: ["At any time without justification", "Only if accessing the information would pose a security risk", "In specific circumstances, such as where it would impact others' privacy", "Access can never be refused"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is an organization's obligation regarding correction of personal information?",
+                options: ["No obligation to correct information", "Must correct information immediately upon request without verification", "Take reasonable steps to correct information to ensure it is accurate, up-to-date, complete, relevant and not misleading", "Only correct sensitive information"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the purpose of the principle of anonymity and pseudonymity?",
+                options: ["To make all transactions anonymous", "To give individuals the option of not identifying themselves when it's lawful and practicable", "To prohibit the use of real names in all circumstances", "To ensure all data is encrypted"],
+                correctAnswer: 1
+            },
+            {
+                question: "How should an organization respond if it receives personal information it didn't request or need?",
+                options: ["Keep it for potential future use", "Immediately destroy all such information", "If lawfully collected, it may be kept; otherwise, it should be destroyed or de-identified", "Forward it to relevant government agencies"],
+                correctAnswer: 2
+            }
+        ];
+
+        let timer;
+        let timeLeft;
+
+        function renderQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+
+            quizData.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('mb-8', 'question-container', 'opacity-0', 'bg-gray-700', 'p-6', 'rounded-lg', 'shadow-md', 'transition', 'duration-300');
+                questionElement.innerHTML = `
+                    <h2 class="text-2xl font-semibold mb-4 text-blue-300">Question ${index + 1}</h2>
+                    <p class="text-xl mb-4">${question.question}</p>
+                    <div class="space-y-3">
+                        ${question.options.map((option, optionIndex) => `
+                            <div class="flex items-center bg-gray-600 p-3 rounded hover:bg-gray-500 transition duration-300">
+                                <input type="radio" id="q${index}o${optionIndex}" name="q${index}" value="${optionIndex}" class="mr-3 h-5 w-5">
+                                <label for="q${index}o${optionIndex}" class="text-lg cursor-pointer flex-grow">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 correct-answer hidden">
+                        <p class="text-green-400 font-semibold">Correct Answer: ${question.options[question.correctAnswer]}</p>
+                    </div>
+                `;
+                quizContainer.appendChild(questionElement);
+
+                // Animate question appearance
+                gsap.to(questionElement, {opacity: 1, duration: 0.5, delay: index * 0.2});
+            });
+        }
+
+        function startTimer() {
+            const timerInput = document.getElementById('timer-input');
+            const timerDisplay = document.getElementById('timer-display');
+            const startButton = document.getElementById('start-timer');
+            const stopButton = document.getElementById('stop-timer');
+
+            timeLeft = parseInt(timerInput.value) * 60;
+            timerDisplay.classList.remove('hidden');
+            startButton.classList.add('hidden');
+            stopButton.classList.remove('hidden');
+            timerInput.disabled = true;
+
+            updateTimerDisplay();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            const timerDisplay = document.getElementById('timer-display');
+            const startButton = document.getElementById('start-timer');
+            const stopButton = document.getElementById('stop-timer');
+            const timerInput = document.getElementById('timer-input');
+
+            timerDisplay.classList.add('hidden');
+            startButton.classList.remove('hidden');
+            stopButton.classList.add('hidden');
+            timerInput.disabled = false;
+        }
+
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('timer-display');
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function submitQuiz() {
+            clearInterval(timer);
+
+            const results = document.getElementById('results');
+            const score = document.getElementById('score');
+            const feedback = document.getElementById('feedback');
+
+            let correctAnswers = 0;
+
+            quizData.forEach((question, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const questionContainer = document.querySelectorAll('.question-container')[index];
+                const correctAnswerElement = questionContainer.querySelector('.correct-answer');
+                
+                correctAnswerElement.classList.remove('hidden');
+                
+                const options = questionContainer.querySelectorAll('.bg-gray-600');
+                
+                if (selectedAnswer) {
+                    const selectedOption = options[parseInt(selectedAnswer.value)];
+                    if (parseInt(selectedAnswer.value) === question.correctAnswer) {
+                        correctAnswers++;
+                        selectedOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                        selectedOption.classList.add('bg-green-600', 'hover:bg-green-700');
+                    } else {
+                        selectedOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                        selectedOption.classList.add('bg-red-600', 'hover:bg-red-700');
+                    }
+                }
+
+                // Highlight the correct answer if it wasn't selected
+                const correctOption = options[question.correctAnswer];
+                if (!selectedAnswer || parseInt(selectedAnswer.value) !== question.correctAnswer) {
+                    correctOption.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                    correctOption.classList.add('bg-green-600', 'hover:bg-green-700');
+                }
+            });
+
+            score.textContent = `You got ${correctAnswers} out of ${quizData.length} questions correct.`;
+
+            feedback.innerHTML = '';
+            quizData.forEach((question, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const listItem = document.createElement('li');
+                listItem.textContent = `Question ${index + 1}: ${selectedAnswer ? (parseInt(selectedAnswer.value) === question.correctAnswer ? 'Correct' : 'Incorrect') : 'Not answered'}`;
+                listItem.classList.add(selectedAnswer && parseInt(selectedAnswer.value) === question.correctAnswer ? 'text-green-400' : 'text-red-400');
+                feedback.appendChild(listItem);
+            });
+
+            results.classList.remove('hidden');
+            gsap.from(results, {opacity: 0, y: 20, duration: 0.5});
+
+            // Disable all inputs after submission
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.disabled = true;
+            });
+
+            // Hide the submit button
+            document.getElementById('submit-quiz').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuiz();
+
+            document.getElementById('start-timer').addEventListener('click', startTimer);
+            document.getElementById('stop-timer').addEventListener('click', stopTimer);
+            document.getElementById('submit-quiz').addEventListener('click', submitQuiz);
+
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    gsap.to(button, {scale: 1.05, duration: 0.2});
+                });
+                button.addEventListener('mouseleave', () => {
+                    gsap.to(button, {scale: 1, duration: 0.2});
+                });
+            });
+        });
+    </script>
+</body>
+</html>
