@@ -9,10 +9,10 @@
 </head>
 <body class="bg-gray-900 min-h-screen flex items-center justify-center text-white">
     <div id="app" class="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <h1 class="text-4xl font-bold mb-8 text-center text-blue-400">Usability Principles Quiz</h1>
+        <h1 class="text-4xl font-bold mb-8 text-center text-blue-400">Digital Solutions Quiz</h1>
         <div id="timer-section" class="mb-8">
             <div class="flex items-center justify-center space-x-4">
-                <input type="number" id="timer-input" class="bg-gray-700 border border-gray-600 rounded p-2 w-20 text-center" value="30" min="1">
+                <input type="number" id="timer-input" class="bg-gray-700 border border-gray-600 rounded p-2 w-20 text-center" value="15" min="1">
                 <label for="timer-input" class="text-gray-300">minutes</label>
                 <button id="start-timer" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">Start</button>
                 <button id="stop-timer" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-300 hidden">Stop</button>
@@ -325,3 +325,21 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderQuiz();
+
+            document.getElementById('start-timer').addEventListener('click', startTimer);
+            document.getElementById('stop-timer').addEventListener('click', stopTimer);
+            document.getElementById('submit-quiz').addEventListener('click', submitQuiz);
+
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    gsap.to(button, {scale: 1.05, duration: 0.2});
+                });
+                button.addEventListener('mouseleave', () => {
+                    gsap.to(button, {scale: 1, duration: 0.2});
+                });
+            });
+        });
+    </script>
+</body>
